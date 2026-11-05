@@ -3,7 +3,7 @@ const c = require('./colors');
 const { VFS } = require('./vfs');
 const { ObjectStore } = require('./store');
 const { runGit, GIT_COMMANDS, GitError, short } = require('./git');
-const { builtins, parseCommand, splitChain, ShellError } = require('./shell');
+const { builtins, parseCommand, splitChain, ShellError, WINDOWS_ALIASES } = require('./shell');
 const { github, seedServer, normalizeUrl } = require('./github');
 const { LESSONS } = require('./lessons');
 
@@ -144,6 +144,13 @@ class Simulator {
     const [name, ...args] = argv;
     if (name === 'git') return runGit(this, args);
     if (builtins[name]) return builtins[name](this, args);
+    const alias = WINDOWS_ALIASES[name.toLowerCase()];
+    if (alias) {
+      const out = builtins[alias](this, args);
+      if (alias === 'clear') return out;
+      const note = c.gray(`(simulator: '${name}' is a Windows command. In bash — Linux, macOS, Git Bash — use '${alias}'.)`);
+      return out ? `${note}\n${out}` : note;
+    }
     switch (name) {
       case 'help':
       case '?':
@@ -181,7 +188,7 @@ class Simulator {
   listLessons() {
     const lines = [c.bold('Guided lessons'), ''];
     LESSONS.forEach((L, i) => {
-      const cur = this.lesson && this.lesson.n === i + 1 ? c.green('  ← current') : '';
+      const cur = this.lesson && this.lesson.n === i + 1 ? c.green(`  ${c.sym('left')} current`) : '';
       lines.push(`  ${c.cyan(`lesson ${i + 1}`)}  ${c.bold(L.title)}${cur}`, `            ${L.summary}`);
     });
     lines.push('', 'Starting a lesson resets the sandbox (your git name/email are kept).');
@@ -218,7 +225,7 @@ class Simulator {
     }
     this.lastCommand = '';
     this.lesson = { n, step: 0 };
-    const bar = '━'.repeat(4);
+    const bar = c.sym('bar').repeat(4);
     return [
       c.bold(c.magenta(`${bar} Lesson ${n}: ${L.title} ${bar}`)),
       L.summary,
@@ -232,7 +239,7 @@ class Simulator {
     const L = LESSONS[this.lesson.n - 1];
     const step = L.steps[this.lesson.step];
     const say = step.say.replace(/`([^`]+)`/g, (_, code) => c.cyan(code));
-    return `${c.bold(c.yellow(`▶ Step ${this.lesson.step + 1}/${L.steps.length}:`))} ${say}`;
+    return `${c.bold(c.yellow(`${c.sym('arrow')} Step ${this.lesson.step + 1}/${L.steps.length}:`))} ${say}`;
   }
 
   hint() {
@@ -259,12 +266,12 @@ class Simulator {
     }
     if (!passed) return '';
     const after = step.after ? ' ' + step.after.replace(/`([^`]+)`/g, (_, code) => c.cyan(code)) : '';
-    const out = [`\n${c.green('✔ Done!')}${after}`];
+    const out = [`\n${c.green(`${c.sym('ok')} Done!`)}${after}`];
     this.lesson.step++;
     if (this.lesson.step >= L.steps.length) {
       const n = this.lesson.n;
       this.lesson = null;
-      out.push('', c.bold(c.green(`★ Lesson ${n} complete: ${L.title}`)), L.done);
+      out.push('', c.bold(c.green(`${c.sym('star')} Lesson ${n} complete: ${L.title}`)), L.done);
       if (LESSONS[n]) out.push('', `Next up: ${c.cyan(`lesson ${n + 1}`)} — ${LESSONS[n].title}. Or keep experimenting here.`);
       else out.push('', 'That was the last lesson. Great work! The sandbox is yours — try anything.');
     } else {

@@ -365,10 +365,10 @@ const builtins = {
       const entries = sim.vfs.list(dir).filter((e) => flags.has('a') || !e.name.startsWith('.'));
       entries.forEach((e, i) => {
         const last = i === entries.length - 1;
-        lines.push(`${prefix}${last ? '└── ' : '├── '}${e.dir ? c.bold(c.blue(e.name + '/')) : e.name}`);
+        lines.push(`${prefix}${last ? c.sym('elbow') : c.sym('tee')}${e.dir ? c.bold(c.blue(e.name + '/')) : e.name}`);
         if (e.dir) {
           dirs++;
-          walk(VFS.join(dir, e.name), prefix + (last ? '    ' : '│   '));
+          walk(VFS.join(dir, e.name), prefix + (last ? '    ' : c.sym('pipe')));
         } else files++;
       });
     };
@@ -377,7 +377,34 @@ const builtins = {
     return lines.join('\n');
   },
 
+  rmdir(sim, args) {
+    const { rest } = splitFlags(args);
+    if (!rest.length) fail('rmdir: missing operand');
+    for (const t of rest) {
+      const abs = sim.vfs.resolve(t);
+      if (!sim.vfs.isDir(abs)) fail(`rmdir: failed to remove '${t}': ${sim.vfs.isFile(abs) ? 'Not a directory' : 'No such file or directory'}`);
+      if (sim.vfs.list(abs).length || sim.repos.has(abs)) fail(`rmdir: failed to remove '${t}': Directory not empty`);
+      if (abs === sim.vfs.home || abs === '/') fail(`rmdir: refusing to remove '${t}'`);
+      sim.vfs.dirs.delete(abs);
+    }
+    return fixCwd(sim);
+  },
+
   clear: () => '\x1b[2J\x1b[H',
+};
+
+// Windows Command Prompt / PowerShell habits -> the bash command taught here.
+const WINDOWS_ALIASES = {
+  dir: 'ls',
+  cls: 'clear',
+  type: 'cat',
+  del: 'rm',
+  erase: 'rm',
+  copy: 'cp',
+  move: 'mv',
+  ren: 'mv',
+  md: 'mkdir',
+  rd: 'rmdir',
 };
 
 for (const editor of ['nano', 'vim', 'vi', 'emacs', 'code', 'notepad', 'gedit']) {
@@ -390,4 +417,4 @@ for (const editor of ['nano', 'vim', 'vi', 'emacs', 'code', 'notepad', 'gedit'])
     );
 }
 
-module.exports = { builtins, parseCommand, splitChain, ShellError };
+module.exports = { builtins, parseCommand, splitChain, ShellError, WINDOWS_ALIASES };

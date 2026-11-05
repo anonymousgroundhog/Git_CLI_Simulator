@@ -6,10 +6,25 @@ let enabled = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR;
 
 const wrap = (open, close = 39) => (s) => (enabled ? `\x1b[${open}m${s}\x1b[${close}m` : String(s));
 
+// Glyphs. The legacy Windows console (conhost) often lacks fonts for symbols
+// like ✔ or ★, so fall back to ASCII there. Windows Terminal, VS Code, ConEmu
+// and Git Bash (mintty) all render Unicode fine.
+const env = process.env;
+let unicode =
+  env.GIT_SIM_ASCII !== '1' &&
+  (process.platform !== 'win32' || Boolean(env.WT_SESSION || env.TERM_PROGRAM || env.ConEmuANSI || env.MSYSTEM));
+
+const UNICODE = { ok: '✔', check: '✓', star: '★', arrow: '▶', left: '←', bar: '━', tee: '├── ', elbow: '└── ', pipe: '│   ', boxTL: '┌', boxTR: '┐', boxBL: '└', boxBR: '┘', boxH: '─', boxV: '│' };
+const ASCII = { ok: '[OK]', check: '[OK]', star: '***', arrow: '>', left: '<-', bar: '=', tee: '|-- ', elbow: '`-- ', pipe: '|   ', boxTL: '+', boxTR: '+', boxBL: '+', boxBR: '+', boxH: '-', boxV: '|' };
+
 module.exports = {
   setEnabled(v) {
     enabled = Boolean(v);
   },
+  setUnicode(v) {
+    unicode = Boolean(v);
+  },
+  sym: (name) => (unicode ? UNICODE : ASCII)[name],
   isEnabled: () => enabled,
   red: wrap(31),
   green: wrap(32),

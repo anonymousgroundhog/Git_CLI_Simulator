@@ -231,3 +231,30 @@ test('unknown git command suggests the closest one', () => {
   const sim = fresh();
   assert.match(sim.run('git comit'), /most similar command is\n\tcommit/);
 });
+
+test('Windows command habits map to bash commands with a note', () => {
+  const sim = fresh();
+  script(sim, ['md proj', 'echo hi > proj/a.txt']);
+  const out = sim.run('dir proj');
+  assert.match(out, /'dir' is a Windows command[\s\S]*use 'ls'/);
+  assert.match(out, /a\.txt/);
+  assert.match(sim.run('type proj\\a.txt'), /No such file/); // backslash is an escape in bash
+  assert.match(sim.run('type proj/a.txt'), /hi/);
+  script(sim, ['del proj/a.txt', 'rd proj']);
+  assert.equal(sim.vfs.isDir(sim.vfs.resolve('proj')), false);
+});
+
+test('ASCII symbol mode replaces Unicode glyphs', () => {
+  const colors = require('../src/colors');
+  colors.setUnicode(false);
+  try {
+    const sim = new Simulator();
+    sim.run('lesson 1');
+    const out = sim.run('pwd');
+    assert.match(out, /\[OK\] Done!/);
+    assert.match(out, /> Step 2\//);
+    assert.doesNotMatch(out + sim.run('lessons') + sim.run('mkdir d && touch d/x && tree'), /[^\x00-\x7f]/);
+  } finally {
+    colors.setUnicode(true);
+  }
+});

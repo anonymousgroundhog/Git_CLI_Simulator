@@ -78,7 +78,7 @@ function github(sim, args) {
       if (sim.serverRepo(url)) throw new ShellError(`github: repository ${USER}/${name} already exists`);
       sim.server.set(normalizeUrl(url), { name: `${USER}/${name}`, url, branches: {}, head: null });
       return [
-        `${c.green('✓')} Created empty repository ${c.bold(`${USER}/${name}`)} on GitHub (simulated).`,
+        `${c.green(c.sym('check'))} Created empty repository ${c.bold(`${USER}/${name}`)} on GitHub (simulated).`,
         '',
         `  URL: ${c.cyan(url)}`,
         '',

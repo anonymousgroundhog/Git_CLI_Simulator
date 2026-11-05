@@ -21,23 +21,61 @@ student@git-sim:~/my-project (main|MERGING)$
 
 ## Running it
 
-Requires Node.js 18 or later. There is nothing to install.
+The simulator runs on **Windows, macOS and Linux**. It needs Node.js 18 or later (from https://nodejs.org) and nothing else: no npm packages and no real git installation. The commands are identical in every terminal:
 
 ```bash
 git clone https://github.com/anonymousgroundhog/Git_CLI_Simulator.git
 cd Git_CLI_Simulator
-npm start                 # or: node bin/git-sim.js
+npm start                        # or: node bin/git-sim.js
 node bin/git-sim.js --lesson 3   # jump straight into a lesson
-npm test                  # run the test suite
+npm test                         # run the test suite
 ```
 
-To install it as a `git-sim` command, run `npm install -g .` from the project folder.
+If a computer doesn't have git, students can download the ZIP from GitHub instead (**Code → Download ZIP**), unzip it, and run `npm start` inside the folder.
 
-You can also pipe commands in, which is handy for demos or for checking an assignment:
+To install it as a `git-sim` command, run `npm install -g .` from the project folder. On Windows, npm creates a `git-sim.cmd` launcher automatically.
+
+### Terminal notes
+
+| Platform | Terminal | Notes |
+|----------|----------|-------|
+| Windows | Windows Terminal, PowerShell, Command Prompt, VS Code | Full support: colors, Tab completion, ↑/↓ history. |
+| Windows | Older consoles that show boxes instead of ✔ or ★ | Start with `node bin/git-sim.js --ascii`, or set `GIT_SIM_ASCII=1`. |
+| Windows | Git Bash (mintty) | Works. For Tab completion and history, start with `winpty node bin/git-sim.js`. |
+| macOS | Terminal, iTerm2, VS Code | Full support. |
+| Linux | Any terminal | Full support. |
+
+Whatever the student's own computer uses, the pretend terminal always behaves like **bash**, the shell used on Linux, macOS and in Git Bash. This keeps the lessons the same for everyone. Habits from the Windows command prompt still work, and the simulator explains the bash equivalent:
+
+| Windows command | Bash command |
+|-----------------|--------------|
+| `dir` | `ls` |
+| `type` | `cat` |
+| `del` | `rm` |
+| `copy` | `cp` |
+| `move`, `ren` | `mv` |
+| `md` | `mkdir` |
+| `rd` | `rmdir` |
+| `cls` | `clear` |
+
+Paths inside the simulator use `/`, as in bash. Ctrl+C clears the current line, and `exit` quits.
+
+### Scripts and demos
+
+You can pipe commands in, which is handy for demos or for checking an assignment. Both Windows (CRLF) and Unix (LF) line endings work:
 
 ```bash
 node bin/git-sim.js --no-color < commands.txt
 ```
+
+| Option | What it does |
+|--------|--------------|
+| `--lesson <n>` | Start directly in lesson n |
+| `--no-color` | Turn off colors (or set `NO_COLOR=1`) |
+| `--ascii` | Use plain ASCII instead of symbols (or set `GIT_SIM_ASCII=1`) |
+| `--help` | Show usage |
+
+GitHub Actions runs the test suite on Windows, macOS and Linux with Node 18, 20 and 22. This includes tests that start the real program and pipe commands into it.
 
 ## Lessons
 
@@ -61,7 +99,7 @@ These commands help during a lesson:
 
 ## What's supported
 
-**Shell commands:** `pwd`, `ls [-a] [-l]`, `cd`, `mkdir [-p]`, `touch`, `cat`, `echo` (with `>` and `>>`, plus `-e` and `-n`), `rm [-r] [-f]`, `mv`, `cp [-r]`, `tree`, `clear`, and `help`. You can chain commands with `&&`, `||` and `;`. Wildcards such as `*.txt` work, and Tab completes commands, files and branch names.
+**Shell commands:** `pwd`, `ls [-a] [-l]`, `cd`, `mkdir [-p]`, `rmdir`, `touch`, `cat`, `echo` (with `>` and `>>`, plus `-e` and `-n`), `rm [-r] [-f]`, `mv`, `cp [-r]`, `tree`, `clear`, and `help`. You can chain commands with `&&`, `||` and `;`. Wildcards such as `*.txt` work, and Tab completes commands, files and branch names.
 
 There is no text editor. Students write files with `echo "text" > file` to create or overwrite a file, and `echo "text" >> file` to add a line to the end. If a student types `nano`, `vim` or `code`, the simulator explains how to use `echo` instead.
 
@@ -119,7 +157,7 @@ src/diff.js         line diff, unified diff output, three-way merge
 src/vfs.js          in-memory file system
 src/github.js       simulated GitHub server
 src/lessons.js      lesson content and step checks
-test/               node:test suite
+test/               node:test suite (engine, lessons, and the real CLI via child process)
 ```
 
 ### Adding a lesson
