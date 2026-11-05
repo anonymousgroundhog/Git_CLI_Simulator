@@ -75,7 +75,7 @@ node bin/git-sim.js --no-color < commands.txt
 | `--ascii` | Use plain ASCII instead of symbols (or set `GIT_SIM_ASCII=1`) |
 | `--help` | Show usage |
 
-GitHub Actions runs the test suite on Windows, macOS and Linux with Node 18, 20 and 22. This includes tests that start the real program and pipe commands into it.
+GitHub Actions runs the test suite on Windows, macOS and Linux with Node 18, 20, 22 and 24. This includes tests that start the real program and pipe commands into it.
 
 ## Lessons
 
