@@ -1,0 +1,18 @@
+{
+  "name": "git-cli-simulator",
+  "version": "1.0.0",
+  "description": "A safe, sandboxed terminal simulator for learning the git command line, with guided lessons.",
+  "main": "src/simulator.js",
+  "bin": {
+    "git-sim": "bin/git-sim.js"
+  },
+  "scripts": {
+    "start": "node bin/git-sim.js",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["git", "education", "simulator", "cli", "teaching"],
+  "license": "UNLICENSED"
+}
